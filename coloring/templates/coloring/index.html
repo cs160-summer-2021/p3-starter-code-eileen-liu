@@ -1,7 +1,9 @@
 
 {% load static %}
 <html>
-<head>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+    integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 <style>
 mark { 
   background-color: black;
@@ -11,37 +13,9 @@ mark {
   float: left;
 
 }
-.column {
-  float: left;
-  width: 25%;
-  padding: 50px;
-}
 
-/* Style the images inside the grid */
-.column img {
-  opacity: 0.8;
-  cursor: pointer;
-}
-
-.column img:hover {
-  opacity: 1;
-}
-
-/* Clear floats after the columns */
-.row:after {
-  content: "";
-  display: table;
-  clear: both;
-}
-
-/* The expanding image container (positioning is needed to position the close button and the text) */
-.container {
-  position: relative;
-  display: none;
-}
 h1 {
     font-size: 50px;
-
 }
   body {background-color: #ADD8E6;}
 
@@ -51,6 +25,8 @@ h1 {
 </head>
 
 <body>
+
+  <!-- change to carousel -->
 
 
 <mark><b>Colorify</b></mark>
@@ -63,34 +39,37 @@ h1 {
 <br>
 
 
-  <!-- make this a button  -->
 <h1><b> Your Designs </b></h1>
-
-<div class="row">
-  <div class="column">
-    <img src="https://image.freepik.com/free-vector/mandala-floral_1159-592.jpg" alt="Nature"  height="600">
+<div class="container">
+  <div class="row">
+    <div class="col-4">
+      <a href="/coloringPage" class="img-fluid" ><img src="/static/coloring/images/Screen Shot 2021-07-15 at 7.57.14 PM.png"  role="button" aria-pressed="true"> </a>
+    </div>
+    <div class="col-4">
+      <img  class="img-fluid" src="https://www.bestcoloringpagesforkids.com/wp-content/uploads/2013/12/Printable-Pinocchio-Coloring-Pages.gif"  height="600">
+    </div>
+    <div class="col-4">
+      <img class="img-fluid" src="http://www.bestcoloringpagesforkids.com/wp-content/uploads/2016/12/Elsa-Coloring-Pages.jpeg" height="600">
+    </div>
   </div>
-  <div class="column">
-    <img src="https://www.bestcoloringpagesforkids.com/wp-content/uploads/2013/12/Printable-Pinocchio-Coloring-Pages.gif" alt="Nature" height="600">
-  </div>
-  <div class="column">
-    <img src="http://www.bestcoloringpagesforkids.com/wp-content/uploads/2016/12/Elsa-Coloring-Pages.jpeg" alt="Nature" height="600">
+  <div class="row">
+  <h1><b> Trending </b></h1>
+</div>
+  
+  <div class="row">
+    <div class="col-4">
+      <img class="img-fluid" src="https://coloringanddrawings.com/images/cartoons/manga-girl/kawaii-manga-girl-4772-660x400.jpg"  height="600">
+    </div>
+    <div class="col-4">
+      <img class="img-fluid" src="https://www.cool2bkids.com/wp-content/uploads/2017/12/Tangled-Coloring-Pages.jpg" height="600">
+    </div>
+    <div class="col-4">
+      <img class="img-fluid" src="https://www.bestcoloringpagesforkids.com/wp-content/uploads/2017/10/40.jpeg" height="600">
+    </div>
   </div>
 </div>
 
-<h1><b> Trending </b></h1>
 
-<div class="row">
-  <div class="column">
-    <img src="https://coloringanddrawings.com/images/cartoons/manga-girl/kawaii-manga-girl-4772-660x400.jpg" alt="Nature"  height="600">
-  </div>
-  <div class="column">
-    <img src="https://www.cool2bkids.com/wp-content/uploads/2017/12/Tangled-Coloring-Pages.jpg" alt="Nature" height="600">
-  </div>
-  <div class="column">
-    <img src="https://www.bestcoloringpagesforkids.com/wp-content/uploads/2017/10/40.jpeg" alt="Nature" height="600">
-  </div>
-</div>
 
 </body>
 </html>
