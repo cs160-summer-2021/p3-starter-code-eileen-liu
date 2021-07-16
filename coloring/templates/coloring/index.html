@@ -1,125 +1,96 @@
-{% load static %}
 
-<!DOCTYPE html>
+{% load static %}
 <html>
 <head>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  	<title>P3 Coloring</title>
+<style>
+mark { 
+  background-color: black;
+  color: white;
+  padding: 15px;
+  font-size: 50px;
+  float: left;
 
-	<script type="text/javascript" src="{% static 'coloring/vendors/jquery/jquery-3.3.1.min.js' %}"></script>
-	<script type="text/javascript" src="{% static 'coloring/vendors/paper/paper-full.min.js' %}"></script>
+}
+.column {
+  float: left;
+  width: 25%;
+  padding: 50px;
+}
 
-	<style type="text/css">
-		#color-palette {
-			width: 300px;
-			background-color: #f1f1f1;
-			display: flex;
-			flex-wrap: wrap;
-			position: absolute;
-			top: 0;
-		}
+/* Style the images inside the grid */
+.column img {
+  opacity: 0.8;
+  cursor: pointer;
+}
 
-		.swatch {
-			width: 24px;
-			height: 24px;
-			-moz-border-radius: 12px;
-			-webkit-border-radius: 12px;
-			border-radius: 12px;
-			margin: 3px;
-		}
+.column img:hover {
+  opacity: 1;
+}
 
-		#myCanvas {
-			padding-left: 0;
-		    padding-right: 0;
-		    margin-left: auto;
-		    margin-right: auto;
-		    display: block;
-		}
-	</style>
+/* Clear floats after the columns */
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
 
-	<script type="text/javascript" canvas="canvas">
-		window.onload = function() {
-			var canvas = document.getElementById('myCanvas');
+/* The expanding image container (positioning is needed to position the close button and the text) */
+.container {
+  position: relative;
+  display: none;
+}
+h1 {
+    font-size: 50px;
 
-			// coloring page
-			var mandala = {
-				item: null,
-				lastClicked: null,
-				filePath: '/static/coloring/images/mandala-freepik.svg'
-			};
+}
+  body {background-color: #ADD8E6;}
 
-			// color palette
-			var cp = {
-				history: ["#000000"], // black selected by default
-				options: [],
-				$container: $('#color-palette')
-			}
 
-			function myCustomInteraction() {
-				var tool = new paper.Tool();
 
-				tool.onMouseDown = function (event) {
-				    var hit = mandala.item.hitTest(event.point, { tolerance: 10, fill: true });
-				    if (hit) {
-				    		// Color pallette keeps track of the full history of colors, though we
-				    		// only color in with the most-recent color.
-				        hit.item.fillColor = cp.history[cp.history.length - 1];
-				    }
-				}
-			}
-
-			// create a color palette with the given colors
-			function createColorPalette(colors){
-
-				// create a swatch for each color
-				for (var i = colors.length - 1; i >= 0; i--) {
-					var $swatch = $("<div>").css("background-color", colors[i])
-									   .addClass("swatch");
-					$swatch.click(function(){
-						// add color to the color palette history
-					  	cp.history.push($(this).css("background-color"));
-					});
-					cp.$container.append($swatch);
-				}
-			}
-
-			// loads a set of colors from a json to create a color palette
-			function getColorsCreatePalette(){
-				cp.$container.html(" ");
-				$.getJSON('/static/coloring/vendors/material/material-colors.json', function(colors){
-					var keys = Object.keys(colors);
-					for (var i = keys.length - 1; i >= 0; i--) {
-						cp.options.push(colors[keys[i]][500]);
-					}
-					createColorPalette(cp.options);
-				});
-			}
-
-			function init(custom){
-				paper.setup(canvas);
-				getColorsCreatePalette();
-
-				paper.project.importSVG(mandala.filePath, function(item) {
-					mandala.item = item._children["design-freepik"];
-				    paper.project.insertLayer(0,mandala.item);
-
-				    if (custom) {
-				    	myCustomInteraction();
-				    } else {
-				    	myGradientInteraction();
-				    }
-
-				});
-			}
-
-			// Set up the mandala interactivity.
-			init(true);
-		}
-	</script>
+</style>
 </head>
+
 <body>
 
-	<canvas id="myCanvas" width="750px" height="750px"></canvas>
-	<div id="color-palette"></div>
+
+<mark><b>Colorify</b></mark>
+<br>
+<br>
+<br>
+<br>
+<h1><b>Hi Eileen, </b></h1>
+<p style= "font-size: 30px;"> Pick a design to begin...</p>
+<br>
+
+
+  <!-- make this a button  -->
+<h1><b> Your Designs </b></h1>
+
+<div class="row">
+  <div class="column">
+    <img src="https://image.freepik.com/free-vector/mandala-floral_1159-592.jpg" alt="Nature"  height="600">
+  </div>
+  <div class="column">
+    <img src="https://www.bestcoloringpagesforkids.com/wp-content/uploads/2013/12/Printable-Pinocchio-Coloring-Pages.gif" alt="Nature" height="600">
+  </div>
+  <div class="column">
+    <img src="http://www.bestcoloringpagesforkids.com/wp-content/uploads/2016/12/Elsa-Coloring-Pages.jpeg" alt="Nature" height="600">
+  </div>
+</div>
+
+<h1><b> Trending </b></h1>
+
+<div class="row">
+  <div class="column">
+    <img src="https://coloringanddrawings.com/images/cartoons/manga-girl/kawaii-manga-girl-4772-660x400.jpg" alt="Nature"  height="600">
+  </div>
+  <div class="column">
+    <img src="https://www.cool2bkids.com/wp-content/uploads/2017/12/Tangled-Coloring-Pages.jpg" alt="Nature" height="600">
+  </div>
+  <div class="column">
+    <img src="https://www.bestcoloringpagesforkids.com/wp-content/uploads/2017/10/40.jpeg" alt="Nature" height="600">
+  </div>
+</div>
+
 </body>
 </html>
