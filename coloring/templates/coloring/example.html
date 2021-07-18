@@ -1,0 +1,190 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>P3 Coloring</title>
+    
+    <script type="text/javascript" src="{% static 'coloring/vendors/jquery/jquery-3.3.1.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'coloring/vendors/paper/paper-full.min.js' %}"></script>
+    
+    <style type="text/css">
+        #color-palette {
+            width: 300px;
+            background-color: #f1f1f1;
+            display: flex;
+            flex-wrap: wrap;
+            position: absolute;
+            top: 0;
+        }
+        
+        .swatch {
+            width: 24px;
+            height: 24px;
+            -moz-border-radius: 12px;
+            -webkit-border-radius: 12px;
+            border-radius: 12px;
+            margin: 3px;
+        }
+        
+        #myCanvas {
+            padding-left: 0;
+            padding-right: 0;
+            margin-left: auto;
+            margin-right: auto;
+            display: block;
+        }
+    </style>
+    
+    <script type="text/javascript" canvas="canvas">
+        window.onload = function() {
+            
+            var canvas = document.getElementById('myCanvas');
+            
+            // coloring page
+            var mandala = {
+                item: null,
+                lastClicked: null,
+                filePath: '/static/coloring/images/mandala-freepik.svg'
+            };
+            
+            // color palette
+            var cp = {
+                history: ["#000000"], // black selected by default
+                options: [],
+                $container: $('#color-palette')
+            }
+            
+            function myCustomInteraction() {
+                var tool = new paper.Tool();
+                
+                tool.onMouseDown = function (event) {
+                    var hit = mandala.item.hitTest(event.point, { tolerance: 10, fill: true });
+                    if (hit) {
+                        // Color pallette keeps track of the full history of colors, though we
+                        // only color in with the most-recent color.
+                        history.saveState(canvas);
+                        hit.item.fillColor = cp.history[cp.history.length - 1];
+                    }
+                }
+            }
+            
+            // create a color palette with the given colors
+            function createColorPalette(colors){
+                
+                // create a swatch for each color
+                for (var i = colors.length - 1; i >= 0; i--) {
+                    var $swatch = $("<div>").css("background-color", colors[i])
+                        .addClass("swatch");
+                        $swatch.click(function(){
+                            // add color to the color palette history
+                            cp.history.push($(this).css("background-color"));
+                        });
+                        cp.$container.append($swatch);
+                    }
+                }
+                
+                // loads a set of colors from a json to create a color palette
+                function getColorsCreatePalette(){
+                    cp.$container.html(" ");
+                    $.getJSON('/static/coloring/vendors/material/material-colors.json', function(colors){
+                        var keys = Object.keys(colors);
+                        for (var i = keys.length - 1; i >= 0; i--) {
+                            cp.options.push(colors[keys[i]][500]);
+                        }
+                        createColorPalette(cp.options);
+                    });
+                }
+                
+                function init(custom){
+                    paper.setup(canvas);
+                    getColorsCreatePalette();
+                    
+                    paper.project.importSVG(mandala.filePath, function(item) {
+                        mandala.item = item._children["design-freepik"];
+                        paper.project.insertLayer(0,mandala.item);
+                        
+                        if (custom) {
+                            myCustomInteraction();
+                        } else {
+                            myGradientInteraction();
+                        }
+                        
+                    });
+                }
+                
+                // Set up the mandala interactivity.
+                init(true);
+                
+                
+                var tool;
+                //var canvas = document.getElementById('myCanvas');
+                var ctx = canvas.getContext('2d');
+                
+                var history = {
+                    redo_list: [],
+                    undo_list: [],
+                    saveState: function(canvas, list, keep_redo) {
+                        console.log("state saved!")
+                        keep_redo = keep_redo || false;
+                        if(!keep_redo) {
+                            this.redo_list = [];
+                        }
+                        
+                        (list || this.undo_list).push(canvas.toDataURL());   
+                    },
+                    undo: function(canvas, ctx) {
+                        console.log("the undo list has :" + this.undo_list.length)
+                        this.restoreState(canvas, ctx, this.undo_list, this.redo_list);
+                    },
+                    redo: function(canvas, ctx) {
+                        this.restoreState(canvas, ctx, this.redo_list, this.undo_list);
+                    },
+                    restoreState: function(canvas, ctx,  pop, push) {
+                        if(pop.length) {
+                            this.saveState(canvas, push, true);
+                            var restore_state = pop.pop();
+                            var img = document.createElement('img')
+                            img.src = restore_state;
+                            //var img = new Element('img', {'src':restore_state});
+                            img.onload = function() {
+                                ctx.clearRect(0, 0, 750, 750);
+                                ctx.drawImage(img, 0, 0, 750, 750, 0, 0, 750, 750);  
+                            }
+                        }
+                    }
+                }
+                
+                document.getElementById('undo').addEventListener('click', function() {
+                    history.undo(canvas, ctx);
+                });
+                
+                document.getElementById('redo').addEventListener('click', function() {
+                        history.redo(canvas, ctx);
+                    });
+                    
+                    
+                    
+                }
+            </script>
+        </head>
+        <body>
+            <div class="container">
+                <canvas id="myCanvas" width="750px" height="750px" class="row"></canvas>
+                <div id="color-palette" class=row></div>
+                <div class="row" id="controllers">
+                    <div class="col">
+                        <!-- UNDO AND REDO BUTTONS -->
+                        <img class="controller" id="undo" style="width: 30px; height: 30px;" src="/static/coloring/images/undo.png">
+                    </div>
+                    <div class="col">
+                        <img class="controller" id="redo" style="width: 30px; height: 30px;" src="/static/coloring/images/redo.png">
+                    </div>
+                </div>
+            </div>
+            
+            
+        </body>
+        </html>
+        

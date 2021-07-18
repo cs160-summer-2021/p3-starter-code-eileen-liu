@@ -5,3 +5,6 @@ def index(request):
 
 def coloringPage(request):
     return render(request, 'coloring/coloringPage.html')
+
+def example(request):
+    return render(request, 'coloring/example.html')
