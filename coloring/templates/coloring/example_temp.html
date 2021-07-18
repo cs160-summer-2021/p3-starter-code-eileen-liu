@@ -1,0 +1,289 @@
+{% load static %}
+
+<!--Light/Dark mode toggle adapted from https://blog.shhdharmen.me/toggle-light-and-dark-themes-in-bootstrap-->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <title>P3 Coloring</title>
+    
+    <!-- <script type="text/javascript" src="{% static 'coloring/vendors/jquery/jquery-3.3.1.min.js' %}"></script> -->
+    <script type="text/javascript" src="{% static 'coloring/vendors/paper/paper-full.min.js' %}"></script>
+    
+    
+    
+    <style type="text/css">
+        #color-palette {
+            width: 300px;
+            background-color: #f1f1f1;
+            display: flex;
+            flex-wrap: wrap;
+            /* position: absolute; */
+            top: 0;
+        }
+        
+        .swatch {
+            width: 24px;
+            height: 24px;
+            -moz-border-radius: 12px;
+            -webkit-border-radius: 12px;
+            border-radius: 12px;
+            margin: 3px;
+        }
+        
+        #myCanvas {
+            padding-left: 0;
+            padding-right: 0;
+            margin-left: auto;
+            margin-right: auto;
+            display: block;
+        }
+    </style>
+    
+    <!-- Included skeleton code to make the coloring section work-->
+    <script type="text/javascript" canvas="canvas">
+        window.onload = function() {
+            var canvas = document.getElementById('myCanvas');
+            
+            // coloring page
+            var mandala = {
+                item: null,
+                lastClicked: null,
+                filePath: '/static/coloring/images/mandala-freepik.svg'
+            };
+            
+            // color palette
+            var cp = {
+                history: ["#000000"], // black selected by default
+                options: [],
+                $container: $('#color-palette')
+            }
+            
+            function myCustomInteraction() {
+                var tool = new paper.Tool();
+                
+                tool.onMouseDown = function (event) {
+                    var hit = mandala.item.hitTest(event.point, { tolerance: 10, fill: true });
+                    if (hit) {
+                        // Color pallette keeps track of the full history of colors, though we
+                        // only color in with the most-recent color.
+                        hit.item.fillColor = cp.history[cp.history.length - 1];
+                    }
+                }
+            }
+            
+            // create a color palette with the given colors
+            function createColorPalette(colors){
+                
+                // create a swatch for each color
+                for (var i = colors.length - 1; i >= 0; i--) {
+                    var $swatch = $("<div>").css("background-color", colors[i]).addClass("swatch");
+                        $swatch.click(function(){
+                            // add color to the color palette history
+                            cp.history.push($(this).css("background-color"));
+                        });
+                        cp.$container.append($swatch);
+                    }
+                }
+                
+                
+                // loads a set of colors from a json to create a color palette
+                function getColorsCreatePalette(){
+                    cp.$container.html(" ");
+                    $.getJSON('/static/coloring/vendors/material/material-colors.json', function(colors){
+                        var keys = Object.keys(colors);
+                        for (var i = keys.length - 1; i >= 0; i--) {
+                            cp.options.push(colors[keys[i]][500]);
+                        }
+                        createColorPalette(cp.options);
+                    });
+                }
+                
+                function init(custom){
+                    paper.setup(canvas);
+                    getColorsCreatePalette();
+                    
+                    paper.project.importSVG(mandala.filePath, function(item) {
+                        mandala.item = item._children["design-freepik"];
+                        paper.project.insertLayer(0,mandala.item);
+                        
+                        if (custom) {
+                            myCustomInteraction();
+                        } else {
+                            myGradientInteraction();
+                        }
+                        
+                    });
+                }
+                
+                // Set up the mandala interactivity.
+                init(true);
+            }
+        </script>
+        
+        
+        
+        
+        
+        <!-- Bootstrap CSS -->
+        <link
+        rel="stylesheet"
+        href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+        integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z"
+        crossorigin="anonymous"
+        />
+        
+        <!-- 🚨 Notice this link -->
+        <link id="dark-theme-style" rel="stylesheet" />
+        
+    </head> 
+    <body>
+        <!--Navigation bar and toggle button-->
+        <nav class="navbar navbar-transparent">
+            <!-- 🚨 Notice the toggleTheme() function -->
+            <a
+            href="javascript:void()"
+            class="btn btn-outline-info btn-lg ml-auto font-weight-bold"
+            id="theme-toggler"
+            onclick="toggleTheme()"
+            ></a>
+        </nav>
+        <!--MAIN COLORING PAGE-->
+        <main role="main" class="container">
+            <div class="jumbotron">
+                <div class="row">
+                    <div class="col">
+                        <div id="color-palette"></div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <canvas id="myCanvas" width="750px" height="750px"></canvas>
+                    </div>
+                </div>
+                
+            </div>	
+        </main>
+        
+        <!-- Optional JavaScript -->
+        <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+        <script
+        src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"
+        ></script>
+        <script
+        src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
+        integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN"
+        crossorigin="anonymous"
+        ></script>
+        <script
+        src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"
+        integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV"
+        crossorigin="anonymous"
+        ></script>
+        
+        <!-- Dharmen Shah's code for Light/Dark Toggle  -->
+        <script>
+            // you can use app's unique identifier here
+            const LOCAL_STORAGE_KEY = "toggle-bootstrap-theme";
+            
+            const LOCAL_META_DATA = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
+            
+            // you can change this url as needed
+            const DARK_THEME_PATH = "https://bootswatch.com/4/cyborg/bootstrap.min.css";
+            
+            const DARK_STYLE_LINK = document.getElementById("dark-theme-style");
+            const THEME_TOGGLER = document.getElementById("theme-toggler");
+            
+            let isDark = LOCAL_META_DATA && LOCAL_META_DATA.isDark;
+            
+            // check if user has already selected dark theme earlier
+            if (isDark) {
+                enableDarkTheme();
+            } else {
+                disableDarkTheme();
+            }
+            
+            
+            /**
+            * Apart from toggling themes, this will also store user's theme preference in local storage.
+            * So when user visits next time, we can load the same theme.
+            *
+            */
+            function toggleTheme() {
+                isDark = !isDark;
+                if (isDark) {
+                    enableDarkTheme();
+                } else {
+                    disableDarkTheme();
+                }
+                const META = { isDark };
+                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(META));
+            }
+            
+            function enableDarkTheme() {
+                DARK_STYLE_LINK.setAttribute("href", DARK_THEME_PATH);
+                THEME_TOGGLER.innerHTML = "🌙 Dark";
+            }
+            
+            function disableDarkTheme() {
+                DARK_STYLE_LINK.setAttribute("href", "");
+                THEME_TOGGLER.innerHTML = "🌞 Light";
+            }
+            
+        </script>
+    </body>
+    </html>
+    
+    
+    
+    <!-- <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+        <a class="navbar-brand" href="#">Colorify</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button> -->
+        <!-- <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Link</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link disabled" href="#">Disabled</a>
+                </li>
+            </ul> -->
+            <!--Creative/advanced mode toggle from https://www.bootstraptoggle.com/-->
+            <!-- TODO: fix styling so that it looks more like a toggle and less like a button-->
+            <!-- <input id="modeToggle" type="checkbox" checked data-toggle="toggle" data-on="Advanced Mode" data-off="Creative Mode" data-onstyle="success" data-offstyle="danger">
+                <div id="console-event"></div> -->
+                <!--Search bar-->
+                <!-- <form class="form-inline mt-2 mt-md-0">
+                    <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search">
+                    <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+                </form> -->
+                <!-- </div> -->
+                <!-- </nav> -->
+                
+                <!-- <div class="container-fluid">
+                    <div class="jumbotron">
+                        <h1 class="display-4">Hello, world!</h1>
+                        <p class="lead">
+                            This is a simple hero unit, a simple jumbotron-style component for
+                            calling extra attention to featured content or information.
+                        </p>
+                        <hr class="my-4" />
+                        <p>
+                            It uses utility classes for typography and spacing to space content
+                            out within the larger container.
+                        </p>
+                        <a class="btn btn-primary btn-lg" href="#" role="button">Learn more</a>
+                    </div>
+                </div> -->
+{"mode":"full","isActive":false}
