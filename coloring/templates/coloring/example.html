@@ -9,8 +9,8 @@
     <script type="text/javascript" src="{% static 'coloring/vendors/jquery/jquery-3.3.1.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'coloring/vendors/paper/paper-full.min.js' %}"></script>
     
-
-
+    
+    
     <style type="text/css">
         #color-palette {
             width: 300px;
@@ -39,6 +39,20 @@
         }
     </style>
     
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    
+    <script type="text/javascript"
+    src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"
+    integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV"
+    crossorigin="anonymous"
+    ></script>
+    
+    <script type="text/javascript"
+    src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
+    integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN"
+    crossorigin="anonymous"
+    ></script>
+    
     <script type="text/javascript" canvas="canvas">
         window.onload = function() {
             
@@ -66,13 +80,19 @@
                     if (hit) {
                         // Color pallette keeps track of the full history of colors, though we
                         // only color in with the most-recent color.
-                        
+                        var existingColor = hit.item.fillColor;
                         hit.item.fillColor = cp.history[cp.history.length - 1];
                         console.log("hit item is: " + hit.item)
                         console.log("hit item is: " + cp.history)
-                        history.saveState(canvas);
+                        
+                        console.log("foudn color " + existingColor)
+                        history.saveState([canvas, [hit.item, existingColor, null]]);
                     }
                 }
+            }
+            
+            function getColor(point){
+                return point.style.backgroundColor;
             }
             
             // create a color palette with the given colors
@@ -135,6 +155,10 @@
                     mandala_undo: [],
                     mandala_redo:[],
                     saveState: function(canvas, list, keep_redo) {
+                        //[canvas, [hititem, undocolor, redocolor]]
+                        canvas1 = canvas[0];
+                        console.log(canvas1 + "is canvas 1")
+                        hititem = canvas[1][0]
                         console.log("state saved!")
                         console.log("mandala item is " + mandala.item._children)
                         console.log("mandala " + mandala)
@@ -143,7 +167,7 @@
                             this.redo_list = [];
                         }
                         
-                        (list || this.undo_list).push(canvas.toDataURL());   
+                        (list || this.undo_list).push([canvas1, [canvas[1][0], canvas[1][1], canvas[1][2]]]);   
                     },
                     undo: function(canvas, ctx) {
                         console.log("the undo list has :" + this.undo_list.length)
@@ -152,19 +176,37 @@
                     redo: function(canvas, ctx) {
                         this.restoreState(canvas, ctx, this.redo_list, this.undo_list);
                     },
-                    restoreState: function(canvas, ctx,  pop, push) {
+                    restoreState: function(canvas, ctx, pop, push) {
+                        var neededColor;
                         if(pop.length) {
-                            
+                            // canvas1 = canvas[0];
+                            // console.log(canvas1 + "is canvas 1")
+                            // hititem = canvas[1][0]
+                            // console.log(pop)
                             console.log("in restoreState")
-                            var restore_state = pop.pop();
+                            var twoElements = pop.pop();
+                            console.log("element1 is :" + twoElements[0])
+                            console.log("element2 is :" + twoElements[1])
+                            var restore_state = twoElements[0];
+                            var hititems = twoElements[1];
+                            console.log("hit items is: " + hititems)
+                            var hititem = hititems[0]
                             var img = document.createElement('img')
                             img.src = restore_state;
+                            if (pop==this.undo_list){
+                                // We're undoing which means the current color needs to become the 
+                                neededColor= hititems[1]
+                                twoElements[1][2] = hititem.fillColor;
+                            } else if (pop==this.redo_list){
+                                neededColor= hititems[2]
+                            }
+                            hititem.fillColor = neededColor;
                             //var img = new Element('img', {'src':restore_state});
                             img.onload = function() {
                                 ctx.clearRect(0, 0, 750, 750);
                                 ctx.drawImage(img, 0, 0, 750, 750, 0, 0, 750, 750);  
                             }
-                            this.saveState(canvas, push, true);
+                            this.saveState(twoElements, push, true);
                         }
                     }
                 }
@@ -174,91 +216,85 @@
                 });
                 
                 document.getElementById('redo').addEventListener('click', function() {
-                        history.redo(canvas, ctx);
-                    });
-                    
-                    
-                    
-                }
-            </script>
-        </head>
-        <body>
-            <main role="main" class="container">
-                <div class="jumbotron">
-                    <div class="row">
-                        <div class="col">
-                            <div id="color-palette"></div>
-                        </div>
-                        
-                        <div class="col">
-                            <div class="col">
-                                <!-- UNDO AND REDO BUTTONS -->
-                                <img class="controller" id="undo" style="width: 30px; height: 30px;" src="/static/coloring/images/undo.png">
-                            </div>
-                            <div class="col">
-                                <img class="controller" id="redo" style="width: 30px; height: 30px;" src="/static/coloring/images/redo.png">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col">
-                            <canvas id="myCanvas" width="750px" height="750px"></canvas>
-                        </div>
-                    </div>
-                </div>
+                    history.redo(canvas, ctx);
+                });
                 
                 
-                <!-- Advanced tools carosel adapted from https://getbootstrap.com/docs/4.0/components/carousel/ -->
-                <!-- <div id="advancedTools" class="row" style="visibility: hidden;">
-                    <div class="col">
-                        <img class="d-block w-100" src="/static/coloring/images/tools.jpg">
-                    </div>
+                
+            }
+        </script>
+    </head>
+    <body>
+        <nav>
+            
+        </nav>
+        <div class="container">
+            <div class="row">
+                <div class="col">
+                    <div id="color-palette"></div>
                 </div>
-                <div id="toolsCarousel" class="carousel slide" data-ride="carousel" style="visibility: hidden;">
-                    <ol class="carousel-indicators">
-                        <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
-                        <li data-target="#carouselExampleIndicators" data-slide-to="1"></li>
-                        <li data-target="#carouselExampleIndicators" data-slide-to="2"></li>
-                    </ol>
-                    <div class="carousel-inner">
-                        <div class="carousel-item active">
-                            <img class="d-block w-100" src="/static/coloring/images/pastels.jpg" alt="First slide">
-                        </div>
-                        <div class="carousel-item">
-                            <img class="d-block w-100" src="/static/coloring/images/pencils.jpg" alt="Second slide">
-                        </div>
-                        <div class="carousel-item">
-                            <img class="d-block w-100" src="/static/coloring/images/watercolors.jpg" alt="Third slide">
-                        </div>
-                    </div>
-                    <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
-                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                        <span class="sr-only">Previous</span>
-                    </a>
-                    <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
-                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                        <span class="sr-only">Next</span>
-                    </a>
-                </div>	 -->
-            </main>
+            </div>
             
-            <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-<!-- <script type="text/javascript"
-src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
-integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
-crossorigin="anonymous"
-></script> -->
-<script type="text/javascript"
-src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
-integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN"
-crossorigin="anonymous"
-></script>
-<script type="text/javascript"
-src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"
-integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV"
-crossorigin="anonymous"
-></script>
-            
-        </body>
-        </html>
+            <div class="row">
+                <div class="col">
+                    <canvas id="myCanvas" width="750px" height="750px"></canvas>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <img class="controller" id="undo" style="width: 30px; height: 30px;" src="/static/coloring/images/undo.png">
+                    <img class="controller" id="redo" style="width: 30px; height: 30px;" src="/static/coloring/images/redo.png">
+                </div>
+            </div>
+        </div>
         
+        <!-- Advanced tools carosel adapted from https://getbootstrap.com/docs/4.0/components/carousel/ -->
+        <div id="advancedTools" class="row" style="visibility: hidden;">
+            <div class="col">
+                <img class="d-block w-100" src="/static/coloring/images/tools.jpg">
+            </div>
+        </div>
+        <div id="toolsCarousel" class="carousel slide" data-ride="carousel" style="visibility: hidden;">
+            <ol class="carousel-indicators">
+                <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
+                <li data-target="#carouselExampleIndicators" data-slide-to="1"></li>
+                <li data-target="#carouselExampleIndicators" data-slide-to="2"></li>
+            </ol>
+            <div class="carousel-inner">
+                <div class="carousel-item active">
+                    <img class="d-block w-100" src="/static/coloring/images/pastels.jpg" alt="First slide">
+                </div>
+                <div class="carousel-item">
+                    <img class="d-block w-100" src="/static/coloring/images/pencils.jpg" alt="Second slide">
+                </div>
+                <div class="carousel-item">
+                    <img class="d-block w-100" src="/static/coloring/images/watercolors.jpg" alt="Third slide">
+                </div>
+            </div>
+            <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="sr-only">Previous</span>
+            </a>
+            <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="sr-only">Next</span>
+            </a>
+        </div>	
+    </div>
+    
+    
+    
+    
+    
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <!-- <script type="text/javascript"
+        src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"
+        ></script> -->
+        
+        
+        
+    </body>
+    </html>
+    
